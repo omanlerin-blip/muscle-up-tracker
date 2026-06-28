@@ -580,7 +580,7 @@ function buildQuickButtons() {
   const pushMax = profile ? profile.pushMax : 40;
 
   const pullValues = buildRepsScale(pullMax, 5);
-  const pushValues = buildRepsScale(pushMax, 5);
+  const pushValues = pushMax >= 80 ? [10, 20, 30, 40, 50] : buildRepsScale(pushMax, 5);
 
   const pullWrap = document.getElementById('pull-quick');
   pullWrap.innerHTML = pullValues.map(v =>
@@ -592,11 +592,17 @@ function buildQuickButtons() {
 }
 
 function buildRepsScale(max, count) {
-  const step = Math.max(1, Math.round(max / (count - 1)));
+  const step = Math.ceil(max / count);
+  // Arrondir le step à un multiple de 5 ou 10 selon la taille
+  const roundTo = step >= 20 ? 10 : step >= 10 ? 5 : 1;
+  const niceStep = Math.max(1, Math.round(step / roundTo) * roundTo);
   const vals = [];
-  for (let i = 1; i < count; i++) vals.push(Math.round(step * i / step) * step || step * i);
-  vals.push(max);
-  return [...new Set(vals.map(v => Math.max(1, v)))].sort((a,b)=>a-b).slice(0, count);
+  for (let i = 1; i <= count; i++) {
+    const v = niceStep * i;
+    if (v <= max * 1.1) vals.push(v);
+  }
+  if (!vals.includes(max)) vals.push(max);
+  return [...new Set(vals)].sort((a,b)=>a-b).slice(0, count);
 }
 
 /* ══ NAV ══ */
