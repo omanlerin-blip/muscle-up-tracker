@@ -474,6 +474,7 @@ canvas { width: 100% !important; height: 100% !important; }
         <button class="save-btn" style="margin-top:0;" onclick="saveConfig()">Sauvegarder</button>
         <button onclick="testConnection()" style="width:100%;background:none;border:1px solid var(--accent);border-radius:var(--r);color:var(--accent);font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;">Tester la connexion</button>
         <button onclick="createHeaders()" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:12px;font-weight:600;padding:10px;cursor:pointer;margin-top:8px;">Créer les en-têtes automatiquement</button>
+        <button id="btn-manual-sync" onclick="manualSync()" style="display:none;width:100%;background:rgba(74,222,128,0.12);border:1px solid var(--green);border-radius:var(--r);color:var(--green);font-size:13px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;"></button>
       </div>
     </div>
   </div>
@@ -885,10 +886,12 @@ async function saveGuidedSession() {
       document.getElementById('sync-status').textContent = 'Sync Sheets : ' + new Date().toLocaleTimeString('fr-FR');
       showToast('✓ Séance sauvée + sync Sheets', 'success');
     } catch(e) {
-      showToast('Sauvé local — erreur Sheets', 'error');
+      showToast('✓ Sauvé local — sync Sheets échouée', 'error');
+      storePendingSync(row);
     }
   } else {
     showToast('✓ Séance sauvegardée', 'success');
+    if (cfg.sheetId) storePendingSync(row);
   }
 
   renderDashboard();
@@ -929,6 +932,7 @@ function initConfigDisplay() {
   document.getElementById('cfg-level-display').textContent = lvlMap[profile.level] || profile.level;
   document.getElementById('cfg-freq-display').textContent = profile.freq + '× / semaine';
   if (cfg.sheetId) document.getElementById('cfg-sheetid').value = cfg.sheetId;
+  updateSyncBadge();
 }
 
 /* ══ LOG ══ */
@@ -1021,17 +1025,31 @@ function initOAuth() {
   tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID, scope: SCOPE,
     callback: (resp) => {
-      if (resp.error) { showToast('Erreur Google : ' + resp.error, 'error'); return; }
+      if (resp.error) {
+        if (resp.error !== 'user_logged_out') updateAuthUI(false);
+        return;
+      }
       accessToken = resp.access_token;
       updateAuthUI(true);
-      showToast('✓ Connecté à Google', 'success');
     }
   });
+  // Tentative de reconnexion silencieuse au lancement
+  silentSignIn();
+}
+
+function silentSignIn() {
+  if (!tokenClient) return;
+  tokenClient.requestAccessToken({ prompt: '' });
 }
 
 function googleSignIn() {
   if (!tokenClient) { showToast('Librairie Google non chargée', 'error'); return; }
-  tokenClient.requestAccessToken({ prompt: 'consent' });
+  tokenClient.requestAccessToken({ prompt: 'consent', callback_override: (resp) => {
+    if (resp.error) { showToast('Erreur Google : ' + resp.error, 'error'); return; }
+    accessToken = resp.access_token;
+    updateAuthUI(true);
+    showToast('✓ Connecté à Google', 'success');
+  }});
 }
 
 function googleSignOut() {
@@ -1094,10 +1112,55 @@ async function createHeaders() {
   } catch(e) { showToast('Erreur création en-têtes', 'error'); }
 }
 
+/* ══ SYNC EN ATTENTE ══ */
+function storePendingSync(row) {
+  const pending = JSON.parse(localStorage.getItem('mu_pending_sync') || '[]');
+  pending.push(row);
+  localStorage.setItem('mu_pending_sync', JSON.stringify(pending));
+  updateSyncBadge();
+}
+
+function updateSyncBadge() {
+  const pending = JSON.parse(localStorage.getItem('mu_pending_sync') || '[]');
+  const btn = document.getElementById('btn-manual-sync');
+  if (!btn) return;
+  if (pending.length > 0) {
+    btn.style.display = 'block';
+    btn.textContent = `Synchroniser ${pending.length} séance${pending.length > 1 ? 's' : ''} en attente`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+async function manualSync() {
+  if (!accessToken) {
+    showToast('Connecte-toi d\'abord à Google', 'error');
+    return;
+  }
+  const pending = JSON.parse(localStorage.getItem('mu_pending_sync') || '[]');
+  if (!pending.length) { showToast('Rien à synchroniser', 'success'); return; }
+
+  let synced = 0;
+  const failed = [];
+  for (const row of pending) {
+    try {
+      await appendToSheet(row);
+      synced++;
+    } catch(e) {
+      failed.push(row);
+    }
+  }
+  localStorage.setItem('mu_pending_sync', JSON.stringify(failed));
+  updateSyncBadge();
+  if (synced > 0) showToast(`✓ ${synced} séance${synced>1?'s':''} synchronisée${synced>1?'s':''}`, 'success');
+  if (failed.length > 0) showToast(`${failed.length} échec(s) de sync`, 'error');
+}
+
 function saveConfig() {
   cfg.sheetId = document.getElementById('cfg-sheetid').value.trim();
   localStorage.setItem('mu_cfg', JSON.stringify(cfg));
   showToast('✓ Configuration sauvegardée', 'success');
+  updateSyncBadge();
 }
 
 /* ══ DASHBOARD ══ */
