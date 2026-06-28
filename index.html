@@ -310,48 +310,97 @@ canvas { width: 100% !important; height: 100% !important; }
       <div style="text-align:center;font-size:11px;color:var(--ink-dim);margin-top:8px;" id="sync-status"></div>
     </div>
 
-    <!-- ══ LOG ══ -->
+    <!-- ══ LOG GUIDÉ ══ -->
     <div id="screen-log" class="screen">
-      <div class="screen-header">
-        <h1>Enregistrer</h1>
-        <p id="log-date-label"></p>
-      </div>
-      <div class="exercise-block">
-        <div class="ex-name"><span class="ex-badge badge-pull"></span>Tractions</div>
-        <div class="card-label">Séries rapides</div>
-        <div class="series-row" id="pull-quick"></div>
-        <div class="custom-input-row">
-          <input class="custom-input" id="pull-custom" type="number" min="1" max="99" placeholder="Autre">
-          <button class="add-serie-btn" onclick="customAdd('pull')">+ Ajouter</button>
+      <!-- Vue : choix de début -->
+      <div id="log-start" style="padding-top:20px;">
+        <div class="screen-header">
+          <h1>Enregistrer</h1>
+          <p id="log-date-label"></p>
         </div>
-        <div class="reps-summary" id="pull-summary">Aucune série</div>
-      </div>
-      <div class="exercise-block">
-        <div class="ex-name"><span class="ex-badge badge-push"></span>Pompes</div>
-        <div class="card-label">Séries rapides</div>
-        <div class="series-row" id="push-quick"></div>
-        <div class="custom-input-row">
-          <input class="custom-input" id="push-custom" type="number" min="1" max="999" placeholder="Autre">
-          <button class="add-serie-btn" onclick="customAdd('push')">+ Ajouter</button>
+        <div class="card" id="today-session-card">
+          <div class="card-label">Séance du jour</div>
+          <div id="today-session-title" style="font-size:18px;font-weight:700;margin-bottom:4px;"></div>
+          <div id="today-session-sub" style="font-size:13px;color:var(--ink-muted);margin-bottom:14px;"></div>
+          <div id="today-session-preview"></div>
         </div>
-        <div class="reps-summary" id="push-summary">Aucune série</div>
+        <button class="save-btn" onclick="startGuidedSession()" style="margin-top:4px;">🏋️ Commencer la séance</button>
       </div>
-      <div class="exercise-block">
-        <div class="ex-name"><span class="ex-badge badge-dip"></span>Dips <span style="font-size:11px;color:var(--ink-dim);font-weight:400">(optionnel)</span></div>
-        <div class="series-row">
-          <button class="serie-btn" onclick="quickAdd('dip',8,this)">8</button>
-          <button class="serie-btn" onclick="quickAdd('dip',10,this)">10</button>
-          <button class="serie-btn" onclick="quickAdd('dip',12,this)">12</button>
-          <button class="serie-btn" onclick="quickAdd('dip',15,this)">15</button>
+
+      <!-- Vue : exercice guidé -->
+      <div id="log-guided" style="display:none;padding-top:16px;">
+
+        <!-- Barre de progression séance -->
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-muted);margin-bottom:6px;">
+            <span id="guided-progress-label"></span>
+            <span id="guided-ex-counter"></span>
+          </div>
+          <div style="background:var(--surface3);border-radius:100px;height:4px;">
+            <div id="guided-progress-bar" style="height:4px;border-radius:100px;background:var(--accent);transition:width 0.4s;width:0%"></div>
+          </div>
         </div>
-        <div class="custom-input-row">
-          <input class="custom-input" id="dip-custom" type="number" min="1" max="99" placeholder="Autre">
-          <button class="add-serie-btn" onclick="customAdd('dip')">+ Ajouter</button>
+
+        <!-- Carte exercice -->
+        <div class="card" style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+            <div id="guided-ex-badge" style="width:8px;height:8px;border-radius:50%;flex-shrink:0;"></div>
+            <div id="guided-ex-type" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-muted);"></div>
+          </div>
+          <div id="guided-ex-name" style="font-size:22px;font-weight:700;letter-spacing:-0.5px;margin-bottom:6px;"></div>
+          <div id="guided-ex-note" style="font-size:13px;color:var(--ink-muted);line-height:1.5;margin-bottom:14px;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;">Objectif</div>
+              <div id="guided-ex-target" style="font-size:20px;font-weight:700;color:var(--accent);"></div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.06em;">Série</div>
+              <div id="guided-serie-counter" style="font-size:20px;font-weight:700;"></div>
+            </div>
+          </div>
         </div>
-        <div class="reps-summary" id="dip-summary">Aucune série</div>
+
+        <!-- Timer de repos -->
+        <div id="timer-block" style="display:none;margin-bottom:12px;">
+          <div class="card" style="text-align:center;padding:20px;">
+            <div style="font-size:13px;color:var(--ink-muted);margin-bottom:8px;">⏱ Repos</div>
+            <div id="timer-display" style="font-size:52px;font-weight:700;letter-spacing:-2px;color:var(--accent);font-variant-numeric:tabular-nums;">1:30</div>
+            <div style="background:var(--surface3);border-radius:100px;height:6px;margin:12px 0;">
+              <div id="timer-bar" style="height:6px;border-radius:100px;background:var(--accent);transition:width 1s linear;width:100%;"></div>
+            </div>
+            <button onclick="skipTimer()" style="background:none;border:1px solid var(--surface3);border-radius:100px;color:var(--ink-muted);font-size:13px;font-weight:600;padding:8px 20px;cursor:pointer;margin-top:4px;">Passer le repos</button>
+          </div>
+        </div>
+
+        <!-- Saisie reps -->
+        <div id="reps-block">
+          <div style="font-size:13px;color:var(--ink-muted);margin-bottom:10px;font-weight:600;">Combien de reps as-tu fait ?</div>
+          <div class="series-row" id="guided-quick-btns" style="margin-bottom:12px;"></div>
+          <div class="custom-input-row" style="margin-bottom:16px;">
+            <input class="custom-input" id="guided-custom-input" type="number" min="0" max="999" placeholder="Autre" style="width:90px;">
+            <button class="add-serie-btn" onclick="confirmCustomReps()">OK</button>
+          </div>
+          <button onclick="confirmReps(0)" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:13px;font-weight:600;padding:12px;cursor:pointer;">Je n'ai pas fait cet exercice</button>
+        </div>
+
+        <!-- Bouton série suivante (visible pendant timer) -->
+        <div id="next-block" style="display:none;">
+          <button class="save-btn" onclick="nextSerie()" style="margin-top:0;">Série suivante →</button>
+        </div>
+
       </div>
-      <button class="save-btn" id="save-btn" onclick="saveSession()">💾 Enregistrer la séance</button>
-      <button onclick="clearLog()" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:13px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;">Effacer</button>
+
+      <!-- Vue : récap final -->
+      <div id="log-recap" style="display:none;padding-top:16px;">
+        <div class="screen-header">
+          <h1>Récap séance 🎉</h1>
+          <p id="recap-date"></p>
+        </div>
+        <div id="recap-content"></div>
+        <button class="save-btn" id="recap-save-btn" onclick="saveGuidedSession()">💾 Sauvegarder la séance</button>
+        <button onclick="cancelRecap()" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:13px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;">Recommencer</button>
+      </div>
     </div>
 
     <!-- ══ STATS ══ -->
@@ -492,7 +541,6 @@ function hideSetup() {
 function initApp() {
   initDate();
   initConfigDisplay();
-  buildQuickButtons();
   renderDashboard();
   renderProgramme();
   renderStats();
@@ -560,35 +608,292 @@ function resetSetup() {
   showSetup();
 }
 
-/* ══ BOUTONS RAPIDES dynamiques ══ */
-function buildQuickButtons() {
-  const pullMax = profile ? profile.pullMax : 10;
-  const pushMax = profile ? profile.pushMax : 40;
+/* ══ LOG GUIDÉ ══ */
+let guidedSession = { exIndex: 0, serieIndex: 0, results: [], todayPlan: [] };
+let timerInterval = null;
+let timerSeconds = 0;
 
-  const pullValues = buildRepsScale(pullMax, 5);
-  const pushValues = pushMax >= 80 ? [10, 20, 30, 40, 50] : buildRepsScale(pushMax, 5);
+function initLogScreen() {
+  const now = new Date();
+  const opts = { weekday:'long', day:'numeric', month:'long' };
+  document.getElementById('log-date-label').textContent = now.toLocaleDateString('fr-FR', opts);
 
-  const pullWrap = document.getElementById('pull-quick');
-  pullWrap.innerHTML = pullValues.map(v =>
-    `<button class="serie-btn" onclick="quickAdd('pull',${v},this)">${v}</button>`).join('');
+  const pullMax = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 0);
+  const freq = profile ? profile.freq : 3;
+  const phase = pullMax < 5 ? 1 : pullMax < 10 ? 2 : 3;
+  const plan = getProgramme(phase, freq, pullMax);
 
-  const pushWrap = document.getElementById('push-quick');
-  pushWrap.innerHTML = pushValues.map(v =>
-    `<button class="serie-btn" onclick="quickAdd('push',${v},this)">${v}</button>`).join('');
+  // Jour de la semaine (0=lundi)
+  const dow = (now.getDay() + 6) % 7;
+  const todayPlan = plan[dow] || plan[0];
+  guidedSession.todayPlan = todayPlan;
+  guidedSession.results = [];
+
+  document.getElementById('today-session-title').textContent = todayPlan.title;
+  document.getElementById('today-session-sub').textContent = todayPlan.sub;
+
+  if (todayPlan.exercices) {
+    document.getElementById('today-session-preview').innerHTML = todayPlan.exercices.map(e =>
+      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--surface3);font-size:13px;">
+        <span>${e.name}</span>
+        <span style="color:var(--accent);font-weight:700;">${e.sets}</span>
+      </div>`).join('');
+  } else {
+    document.getElementById('today-session-preview').innerHTML =
+      '<p style="font-size:13px;color:var(--ink-muted);">Repos actif — étirements et mobilité.</p>';
+  }
+
+  showLogView('start');
 }
 
-function buildRepsScale(max, count) {
-  const step = Math.ceil(max / count);
-  // Arrondir le step à un multiple de 5 ou 10 selon la taille
-  const roundTo = step >= 20 ? 10 : step >= 10 ? 5 : 1;
-  const niceStep = Math.max(1, Math.round(step / roundTo) * roundTo);
-  const vals = [];
-  for (let i = 1; i <= count; i++) {
-    const v = niceStep * i;
-    if (v <= max * 1.1) vals.push(v);
+function showLogView(view) {
+  document.getElementById('log-start').style.display = view === 'start' ? 'block' : 'none';
+  document.getElementById('log-guided').style.display = view === 'guided' ? 'block' : 'none';
+  document.getElementById('log-recap').style.display = view === 'recap' ? 'block' : 'none';
+}
+
+function startGuidedSession() {
+  const plan = guidedSession.todayPlan;
+  if (!plan.exercices) { showToast('C\'est un jour de repos ! 😴'); return; }
+  guidedSession.exIndex = 0;
+  guidedSession.serieIndex = 0;
+  guidedSession.results = plan.exercices.map(e => ({ ex: e, series: [] }));
+  showLogView('guided');
+  renderGuidedStep();
+}
+
+function renderGuidedStep() {
+  const plan = guidedSession.todayPlan;
+  const exIdx = guidedSession.exIndex;
+  const serieIdx = guidedSession.serieIndex;
+  const ex = plan.exercices[exIdx];
+
+  // Progression globale
+  const totalEx = plan.exercices.length;
+  const pct = Math.round((exIdx / totalEx) * 100);
+  document.getElementById('guided-progress-bar').style.width = pct + '%';
+  document.getElementById('guided-progress-label').textContent = ex.name;
+  document.getElementById('guided-ex-counter').textContent = `${exIdx + 1} / ${totalEx}`;
+
+  // Infos exercice
+  const type = ex.name.toLowerCase().includes('pomp') ? 'push' :
+               ex.name.toLowerCase().includes('dip') ? 'dip' : 'pull';
+  const colors = { pull: 'var(--accent)', push: 'var(--accent2)', dip: 'var(--amber)' };
+  document.getElementById('guided-ex-badge').style.background = colors[type];
+  document.getElementById('guided-ex-type').textContent = type === 'pull' ? 'Tirage' : type === 'push' ? 'Poussée' : 'Dips';
+  document.getElementById('guided-ex-name').textContent = ex.name;
+  document.getElementById('guided-ex-note').textContent = ex.note;
+  document.getElementById('guided-ex-target').textContent = ex.sets;
+
+  // Nombre de séries
+  const nSeries = parseSeriesCount(ex.sets);
+  document.getElementById('guided-serie-counter').textContent = `${serieIdx + 1} / ${nSeries}`;
+
+  // Boutons rapides selon l'exercice
+  const targetReps = parseTargetReps(ex.sets);
+  const quickVals = buildQuickRepsForTarget(targetReps, type);
+  document.getElementById('guided-quick-btns').innerHTML = quickVals.map(v =>
+    `<button class="serie-btn" onclick="confirmReps(${v})">${v}</button>`).join('');
+  document.getElementById('guided-custom-input').value = '';
+
+  // Afficher saisie, cacher timer
+  document.getElementById('timer-block').style.display = 'none';
+  document.getElementById('reps-block').style.display = 'block';
+  document.getElementById('next-block').style.display = 'none';
+  stopTimer();
+}
+
+function parseSeriesCount(sets) {
+  // "4×6" → 4, "5×max" → 5, "3×(4+8)" → 3, "Essais libres" → 3
+  const m = sets.match(/^(\d+)[×x]/);
+  return m ? parseInt(m[1]) : 3;
+}
+
+function parseTargetReps(sets) {
+  // "4×6" → 6, "4×max" → null, "3×(4+8)" → 12
+  const m = sets.match(/[×x](\d+)/);
+  if (!m) return null;
+  return parseInt(m[1]);
+}
+
+function buildQuickRepsForTarget(target, type) {
+  if (!target) {
+    // max → propose des valeurs autour du PR
+    const pr = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 10);
+    const base = type === 'push' ? (profile ? profile.pushMax : 40) : pr;
+    return [Math.max(1,base-4), Math.max(1,base-2), base, base+2, base+4];
   }
-  if (!vals.includes(max)) vals.push(max);
-  return [...new Set(vals)].sort((a,b)=>a-b).slice(0, count);
+  const step = Math.max(1, Math.floor(target / 4));
+  return [
+    Math.max(1, target - step*2),
+    Math.max(1, target - step),
+    target,
+    target + step,
+    target + step*2
+  ];
+}
+
+function confirmReps(reps) {
+  if (reps === undefined) {
+    const v = parseInt(document.getElementById('guided-custom-input').value);
+    if (isNaN(v) || v < 0) { showToast('Entre un nombre valide', 'error'); return; }
+    reps = v;
+  }
+  guidedSession.results[guidedSession.exIndex].series.push(reps);
+
+  const ex = guidedSession.todayPlan.exercices[guidedSession.exIndex];
+  const nSeries = parseSeriesCount(ex.sets);
+  const serieIdx = guidedSession.serieIndex;
+
+  if (serieIdx + 1 < nSeries) {
+    // Encore des séries → timer de repos
+    guidedSession.serieIndex++;
+    startTimer(90);
+  } else {
+    // Exercice terminé → exercice suivant
+    guidedSession.serieIndex = 0;
+    guidedSession.exIndex++;
+    if (guidedSession.exIndex >= guidedSession.todayPlan.exercices.length) {
+      showRecap();
+    } else {
+      startTimer(90);
+    }
+  }
+}
+
+function confirmCustomReps() {
+  confirmReps(undefined);
+}
+
+/* ── TIMER ── */
+function startTimer(seconds) {
+  stopTimer();
+  timerSeconds = seconds;
+  document.getElementById('timer-block').style.display = 'block';
+  document.getElementById('reps-block').style.display = 'none';
+  document.getElementById('next-block').style.display = 'block';
+  updateTimerDisplay();
+
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    updateTimerDisplay();
+    const pct = (timerSeconds / seconds) * 100;
+    document.getElementById('timer-bar').style.width = pct + '%';
+    if (timerSeconds <= 0) {
+      stopTimer();
+      // Timer fini → afficher saisie
+      document.getElementById('timer-block').style.display = 'none';
+      document.getElementById('reps-block').style.display = 'block';
+      document.getElementById('next-block').style.display = 'none';
+      renderGuidedStep();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds / 60);
+  const s = timerSeconds % 60;
+  document.getElementById('timer-display').textContent = m + ':' + String(s).padStart(2,'0');
+}
+
+function skipTimer() {
+  stopTimer();
+  document.getElementById('timer-block').style.display = 'none';
+  document.getElementById('reps-block').style.display = 'block';
+  document.getElementById('next-block').style.display = 'none';
+  renderGuidedStep();
+}
+
+function nextSerie() {
+  skipTimer();
+}
+
+/* ── RÉCAP ── */
+function showRecap() {
+  stopTimer();
+  showLogView('recap');
+  const now = new Date();
+  document.getElementById('recap-date').textContent = now.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+
+  const html = guidedSession.results.map(r => {
+    const total = r.series.reduce((a,b)=>a+b,0);
+    const max = r.series.length ? Math.max(...r.series) : 0;
+    const done = r.series.filter(v=>v>0).length;
+    return `<div class="card" style="margin-bottom:10px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;">${r.ex.name}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+        ${r.series.map((v,i) => `<div style="background:${v>0?'var(--accent-glow)':'var(--surface3)'};border:1px solid ${v>0?'var(--accent)':'var(--surface3)'};border-radius:var(--rs);padding:6px 12px;font-size:13px;font-weight:700;color:${v>0?'var(--accent)':'var(--ink-dim)'};">${v}</div>`).join('')}
+      </div>
+      <div style="font-size:12px;color:var(--ink-muted);">
+        ${done} série${done>1?'s':''} effectuée${done>1?'s':''} · Total : <strong style="color:var(--ink)">${total}</strong> · Max : <strong style="color:var(--ink)">${max}</strong>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('recap-content').innerHTML = html;
+}
+
+function cancelRecap() {
+  guidedSession.exIndex = 0;
+  guidedSession.serieIndex = 0;
+  guidedSession.results = [];
+  showLogView('start');
+}
+
+async function saveGuidedSession() {
+  const btn = document.getElementById('recap-save-btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+  // Agréger les résultats
+  let pullSeries = [], pushSeries = [], dipSeries = [];
+  guidedSession.results.forEach(r => {
+    const name = r.ex.name.toLowerCase();
+    const vals = r.series.filter(v=>v>0);
+    if (name.includes('pomp')) pushSeries.push(...vals);
+    else if (name.includes('dip')) dipSeries.push(...vals);
+    else pullSeries.push(...vals);
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  const row = {
+    date: today,
+    pullMax: pullSeries.length ? Math.max(...pullSeries) : 0,
+    pushTotal: pushSeries.reduce((a,b)=>a+b,0),
+    dipTotal: dipSeries.reduce((a,b)=>a+b,0),
+    pullSeries: JSON.stringify(pullSeries),
+    pushSeries: JSON.stringify(pushSeries)
+  };
+
+  const existing = sessions.findIndex(s=>s.date===today);
+  if (existing>=0) sessions[existing]=row; else sessions.push(row);
+  sessions.sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('mu_sessions', JSON.stringify(sessions));
+
+  if (profile && row.pullMax > profile.pullMax) {
+    profile.pullMax = row.pullMax;
+    localStorage.setItem('mu_profile', JSON.stringify(profile));
+    showToast('🎉 Nouveau record : ' + row.pullMax + ' tractions !', 'success');
+  }
+
+  if (accessToken && cfg.sheetId) {
+    try {
+      await appendToSheet(row);
+      document.getElementById('sync-status').textContent = 'Sync Sheets : ' + new Date().toLocaleTimeString('fr-FR');
+      showToast('✓ Séance sauvée + sync Sheets', 'success');
+    } catch(e) {
+      showToast('Sauvé local — erreur Sheets', 'error');
+    }
+  } else {
+    showToast('✓ Séance sauvegardée', 'success');
+  }
+
+  renderDashboard();
+  showLogView('start');
+  btn.disabled = false; btn.textContent = '💾 Sauvegarder la séance';
 }
 
 /* ══ NAV ══ */
@@ -600,6 +905,7 @@ function goTo(screen, btn) {
   if (screen === 'stats') renderStats();
   if (screen === 'home') renderDashboard();
   if (screen === 'tips') renderProgramme();
+  if (screen === 'log') initLogScreen();
 }
 
 /* ══ DATE ══ */
