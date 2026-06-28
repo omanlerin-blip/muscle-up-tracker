@@ -468,7 +468,7 @@ canvas { width: 100% !important; height: 100% !important; }
         <div class="card-label">Google Sheet cible</div>
         <div class="config-field">
           <label>ID du Google Sheet</label>
-          <input type="text" id="cfg-sheetid" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
+          <input type="text" id="cfg-sheetid" placeholder="Colle ton ID ici">
           <small>URL : docs.google.com/spreadsheets/d/<strong>ID</strong>/edit</small>
         </div>
         <button class="save-btn" style="margin-top:0;" onclick="saveConfig()">Sauvegarder</button>
@@ -521,6 +521,12 @@ let setupData = { level: null, freq: null };
 
 /* ══ INIT ══ */
 document.addEventListener('DOMContentLoaded', () => {
+  // Remplir le champ Sheet ID immédiatement depuis localStorage
+  const savedCfg = JSON.parse(localStorage.getItem('mu_cfg') || '{}');
+  if (savedCfg.sheetId) {
+    document.getElementById('cfg-sheetid').value = savedCfg.sheetId;
+  }
+
   if (!profile) {
     showSetup();
   } else {
