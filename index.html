@@ -666,10 +666,10 @@ function updateSummary(ex) {
   el.innerHTML = `<span>${arr.length} séries</span> · Total : <span>${total}</span> · Max : <span>${max}</span>`;
 }
 
-function clearLog() {
+function clearLog(silent = false) {
   currentLog = { pull: [], push: [], dip: [] };
   ['pull','push','dip'].forEach(ex => updateSummary(ex));
-  showToast('Séance effacée');
+  if (!silent) showToast('Formulaire effacé');
 }
 
 async function saveSession() {
@@ -714,7 +714,7 @@ async function saveSession() {
     if (!profile || row.pullMax <= profile.pullMax) showToast('✓ Séance sauvegardée', 'success');
   }
 
-  clearLog();
+  clearLog(true);
   renderDashboard();
   btn.disabled = false; btn.textContent = '💾 Enregistrer la séance';
 }
