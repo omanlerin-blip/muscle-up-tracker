@@ -535,20 +535,6 @@ function finishSetup() {
   profile = { name, level: setupData.level, freq: setupData.freq, pullMax, pushMax, createdAt: new Date().toISOString() };
   localStorage.setItem('mu_profile', JSON.stringify(profile));
 
-  // Session de référence
-  if (!sessions.length) {
-    const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
-    sessions.push({
-      date: yesterday.toISOString().split('T')[0],
-      pullMax,
-      pushTotal: pushMax,
-      dipTotal: 0,
-      pullSeries: JSON.stringify([pullMax]),
-      pushSeries: JSON.stringify([pushMax])
-    });
-    localStorage.setItem('mu_sessions', JSON.stringify(sessions));
-  }
-
   hideSetup();
   initApp();
   showToast('Programme créé ! Bienvenue ' + name + ' 🚀', 'success');
@@ -814,7 +800,7 @@ function renderDashboard() {
   const streak = calcStreak();
   document.getElementById('streak-count').textContent = streak;
   const prPull = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 0);
-  const prPush = sessions.length ? Math.max(...sessions.map(s=>s.pushTotal||0)) : 0;
+  const prPush = sessions.length ? Math.max(...sessions.map(s=>s.pushTotal||0)) : (profile ? profile.pushMax : 0);
   document.getElementById('pr-pull').textContent = prPull || '–';
   document.getElementById('pr-push').textContent = prPush || '–';
   renderMuscleUpBar(prPull);
