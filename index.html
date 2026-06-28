@@ -647,7 +647,7 @@ function initLogScreen() {
       </div>`).join('');
   } else {
     document.getElementById('today-session-preview').innerHTML =
-      '<p style="font-size:13px;color:var(--ink-muted);">Repos actif — étirements et mobilité.</p>';
+      '<p style="font-size:13px;color:var(--ink-muted);margin-bottom:8px;">Repos actif prévu — étirements et mobilité.</p><p style="font-size:13px;color:var(--ink-muted);">Tu peux quand même démarrer une séance si tu le souhaites.</p>';
   }
 
   showLogView('start');
@@ -765,7 +765,7 @@ function confirmReps(reps) {
   if (serieIdx + 1 < nSeries) {
     // Encore des séries → timer de repos
     guidedSession.serieIndex++;
-    startTimer(90);
+    startTimer(60);
   } else {
     // Exercice terminé → exercice suivant
     guidedSession.serieIndex = 0;
@@ -773,7 +773,7 @@ function confirmReps(reps) {
     if (guidedSession.exIndex >= guidedSession.todayPlan.exercices.length) {
       showRecap();
     } else {
-      startTimer(90);
+      startTimer(60);
     }
   }
 }
@@ -1326,23 +1326,47 @@ function getProgramme(phase, freq, pullMax) {
   const dayLabels = ['L','M','M','J','V','S','D'];
   const allDays = [];
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   if (phase === 1) {
     const pull = {
-      type:'pull', title:'Séance tractions', sub:'Tirage vertical + base',
+      type:'pull', title:'Séance tractions', sub:'20 min · Tirage vertical',
       exercices:[
-        { name:'Tractions', sets:'4×max', note:'Amplitude complète, pause en bas' },
-        { name:'Australian pull-ups', sets:'3×15', note:'Barre basse, corps oblique — base du muscle up' },
-        { name:'Isométrie en haut', sets:'5×10s', note:'Tiens-toi en position haute, coudes pliés' },
-        { name:'Dips', sets:'3×10', note:'Descends sous 90°, épaules basses' },
+        { name:'Tractions', sets:'3×max', note:'Amplitude complète, pause en bas' },
+        { name:'Australian pull-ups', sets:'3×12', note:'Barre basse, corps oblique — base du muscle up' },
+        { name:'Isométrie en haut', sets:'3×10s', note:'Tiens-toi en position haute, coudes pliés' },
       ]
     };
     const push = {
-      type:'push', title:'Séance poussée', sub:'Pompes + triceps',
+      type:'push', title:'Séance poussée', sub:'20 min · Pompes + dips',
       exercices:[
-        { name:'Pompes', sets:'5×'+Math.round(pullMax*2.5), note:'Contrôlées, coudes à 45° du corps' },
-        { name:'Pompes pike', sets:'3×12', note:'Fessiers en l\'air, corps en V — poussée verticale' },
-        { name:'Dips chaise', sets:'3×15', note:'Mains sur chaise derrière toi, descends bas' },
-        { name:'Gainage planche', sets:'3×45s', note:'Corps droit, core engagé' },
+        { name:'Pompes', sets:'3×20', note:'Contrôlées, coudes à 45° du corps' },
+        { name:'Pompes pike', sets:'3×10', note:'Fessiers en l\'air, corps en V' },
+        { name:'Dips chaise', sets:'3×12', note:'Mains sur chaise derrière toi, descends bas' },
       ]
     };
     const rest = { type:'rest', title:'Repos', sub:'Récupération active', exercices: null };
@@ -1354,31 +1378,27 @@ function getProgramme(phase, freq, pullMax) {
 
   if (phase === 2) {
     const pull = {
-      type:'pull', title:'Séance force tirage', sub:'Tractions lestées + explosivité',
+      type:'pull', title:'Séance force tirage', sub:'20 min · Tractions + explosivité',
       exercices:[
-        { name:'Tractions max', sets:'1×max', note:'Test du jour — note ton score dans l\'app' },
-        { name:'Tractions faux grip', sets:'4×6', note:'Poignet au-dessus de la barre — technique muscle up' },
-        { name:'Tractions explosives', sets:'4×4', note:'Tire le plus vite possible, coudes doivent passer la barre' },
-        { name:'Tractions lentes (4s descente)', sets:'3×6', note:'Force excentrique — très efficace pour progresser' },
-        { name:'Dips', sets:'4×12', note:'Descends bas, triceps au maximum' },
+        { name:'Tractions max', sets:'1×max', note:'Ton baromètre du jour — note bien ton score' },
+        { name:'Tractions faux grip', sets:'3×6', note:'Poignet au-dessus de la barre — technique muscle up' },
+        { name:'Tractions explosives', sets:'3×4', note:'Tire le plus vite possible vers le haut' },
       ]
     };
     const push = {
-      type:'push', title:'Séance poussée + core', sub:'Pompes + gainage',
+      type:'push', title:'Séance poussée', sub:'20 min · Pompes + triceps',
       exercices:[
-        { name:'Pompes pyramide', sets:'10+20+30+20+10', note:'Monte et descends la pyramide — endurance force' },
-        { name:'Pompes pike', sets:'4×15', note:'Préparation poussée verticale muscle up' },
-        { name:'Pompes explosion', sets:'3×8', note:'Tape dans les mains à chaque rep si possible' },
-        { name:'L-sit (entre 2 chaises)', sets:'5×10s', note:'Core de fer — fondamental pour le muscle up' },
+        { name:'Pompes pyramide', sets:'3×(10+20+30)', note:'Enchaîne les séries en montant' },
+        { name:'Pompes pike', sets:'3×12', note:'Fessiers en l\'air, corps en V — poussée verticale' },
+        { name:'Dips', sets:'3×10', note:'Descends sous 90°, triceps complet' },
       ]
     };
     const combo = {
-      type:'pull', title:'Séance combinée', sub:'Enchaînements tirage-poussée',
+      type:'pull', title:'Séance enchaînement', sub:'20 min · Transition muscle up',
       exercices:[
-        { name:'Traction + dip en chaîne', sets:'4×(4+8)', note:'Sans lâcher la barre — simule le muscle up' },
-        { name:'Muscle up négatif', sets:'4×3', note:'Saute au-dessus de la barre, descends en 5s' },
-        { name:'Australian pull-ups explosifs', sets:'3×10', note:'Décollage des mains à chaque rep' },
-        { name:'Gainage dynamique', sets:'3×12', note:'Mountain climbers + planche' },
+        { name:'Traction + dip en chaîne', sets:'3×(4+6)', note:'Sans lâcher la barre — simule le muscle up' },
+        { name:'Muscle up négatif', sets:'3×3', note:'Saute au-dessus de la barre, descends en 5s' },
+        { name:'Tractions lentes', sets:'3×5', note:'4 secondes en descente — force excentrique' },
       ]
     };
     const rest = { type:'rest', title:'Repos', sub:'Récupération active', exercices: null };
@@ -1390,31 +1410,27 @@ function getProgramme(phase, freq, pullMax) {
 
   // Phase 3
   const negatives = {
-    type:'pull', title:'Séance négatives', sub:'Technique transition muscle up',
+    type:'pull', title:'Séance négatives', sub:'20 min · Technique muscle up',
     exercices:[
-      { name:'Échauffement tractions', sets:'3×8', note:'Faux grip, amplitude complète' },
-      { name:'Muscle up négatif', sets:'6×3', note:'Saute en position dip haut, descends en 6s — exercice roi' },
-      { name:'Traction explosive + transition', sets:'5×3', note:'Tire fort, essaie de passer les coudes' },
-      { name:'Dips lestés', sets:'4×8', note:'Force de poussée finale du muscle up' },
-      { name:'Tractions faux grip max', sets:'1×max', note:'Note ton score — indicateur de progression' },
+      { name:'Tractions faux grip', sets:'3×6', note:'Échauffement technique — poignet au-dessus' },
+      { name:'Muscle up négatif', sets:'4×3', note:'Saute en position dip, descends en 6s — exercice roi' },
+      { name:'Dips lestés', sets:'3×8', note:'Force de poussée finale du muscle up' },
     ]
   };
   const force = {
-    type:'pull', title:'Séance force maximale', sub:'Intensité et explosivité',
+    type:'pull', title:'Séance force maximale', sub:'20 min · Intensité pure',
     exercices:[
-      { name:'Tractions lestées', sets:'5×4', note:'+5 à 10 kg si possible — force brute' },
-      { name:'Tractions typewriter', sets:'3×6', note:'Glisse de gauche à droite en haut — contrôle latéral' },
-      { name:'Traction + dip chaîne', sets:'5×(4+6)', note:'Enchaîne sans poser les pieds' },
-      { name:'L-sit', sets:'6×12s', note:'Core pour stabiliser le muscle up' },
+      { name:'Tractions max', sets:'1×max', note:'Test du jour — bats ton record !' },
+      { name:'Traction + dip chaîne', sets:'4×(4+6)', note:'Enchaîne sans poser les pieds' },
+      { name:'Tractions lentes', sets:'3×5', note:'4s descente — force excentrique maximale' },
     ]
   };
   const push = {
-    type:'push', title:'Séance poussée', sub:'Triceps + épaules',
+    type:'push', title:'Séance poussée', sub:'20 min · Triceps + épaules',
     exercices:[
-      { name:'Dips lestés', sets:'5×8', note:'+5 kg — force de sortie du muscle up' },
-      { name:'Pompes pike', sets:'4×20', note:'Poussée verticale, corps en V profond' },
-      { name:'Pompes explosion', sets:'4×6', note:'Décollage ou clapping push-ups' },
-      { name:'Tractions de finition', sets:'3×max', note:'Faux grip — ancrage neurologique' },
+      { name:'Dips', sets:'4×10', note:'Amplitude complète, descends bas' },
+      { name:'Pompes pike', sets:'3×15', note:'Corps en V profond — poussée verticale' },
+      { name:'Pompes explosion', sets:'3×6', note:'Le plus vite possible — puissance' },
     ]
   };
   const rest = { type:'rest', title:'Repos', sub:'Récupération active', exercices: null };
