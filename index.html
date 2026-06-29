@@ -324,7 +324,52 @@ canvas { width: 100% !important; height: 100% !important; }
           <div id="today-session-sub" style="font-size:13px;color:var(--ink-muted);margin-bottom:14px;"></div>
           <div id="today-session-preview"></div>
         </div>
-        <button class="save-btn" onclick="startGuidedSession()" style="margin-top:4px;">🏋️ Commencer la séance</button>
+        <button class="save-btn" onclick="startGuidedSession()" style="margin-top:4px;">🏋️ Suivre le programme</button>
+        <button onclick="showFreeSession()" style="width:100%;background:none;border:1px solid var(--accent);border-radius:var(--r);color:var(--accent);font-size:15px;font-weight:600;padding:14px;cursor:pointer;margin-top:10px;">✏️ Séance libre</button>
+      </div>
+
+      <!-- Vue : séance libre -->
+      <div id="log-free" style="display:none;padding-top:16px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <button onclick="showLogView('start')" style="background:none;border:none;color:var(--ink-muted);font-size:22px;cursor:pointer;padding:0;">←</button>
+          <h2 style="font-size:20px;font-weight:700;">Séance libre</h2>
+        </div>
+        <div class="exercise-block">
+          <div class="ex-name"><span class="ex-badge badge-pull"></span>Tractions</div>
+          <div class="card-label">Séries rapides</div>
+          <div class="series-row" id="free-pull-quick"></div>
+          <div class="custom-input-row">
+            <input class="custom-input" id="free-pull-custom" type="number" min="1" max="99" placeholder="?">
+            <button class="add-serie-btn" onclick="freeCustomAdd('pull')">+ Ajouter</button>
+          </div>
+          <div class="reps-summary" id="free-pull-summary">Aucune série</div>
+        </div>
+        <div class="exercise-block">
+          <div class="ex-name"><span class="ex-badge badge-push"></span>Pompes</div>
+          <div class="card-label">Séries rapides</div>
+          <div class="series-row" id="free-push-quick"></div>
+          <div class="custom-input-row">
+            <input class="custom-input" id="free-push-custom" type="number" min="1" max="999" placeholder="?">
+            <button class="add-serie-btn" onclick="freeCustomAdd('push')">+ Ajouter</button>
+          </div>
+          <div class="reps-summary" id="free-push-summary">Aucune série</div>
+        </div>
+        <div class="exercise-block">
+          <div class="ex-name"><span class="ex-badge badge-dip"></span>Dips <span style="font-size:11px;color:var(--ink-dim);font-weight:400">(optionnel)</span></div>
+          <div class="series-row">
+            <button class="serie-btn" onclick="freeQuickAdd('dip',8,this)">8</button>
+            <button class="serie-btn" onclick="freeQuickAdd('dip',10,this)">10</button>
+            <button class="serie-btn" onclick="freeQuickAdd('dip',12,this)">12</button>
+            <button class="serie-btn" onclick="freeQuickAdd('dip',15,this)">15</button>
+          </div>
+          <div class="custom-input-row">
+            <input class="custom-input" id="free-dip-custom" type="number" min="1" max="99" placeholder="?">
+            <button class="add-serie-btn" onclick="freeCustomAdd('dip')">+ Ajouter</button>
+          </div>
+          <div class="reps-summary" id="free-dip-summary">Aucune série</div>
+        </div>
+        <button class="save-btn" id="free-save-btn" onclick="saveFreeSession()">💾 Enregistrer la séance</button>
+        <button onclick="clearFreeLog()" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:13px;font-weight:600;padding:12px;cursor:pointer;margin-top:8px;">Effacer</button>
       </div>
 
       <!-- Vue : exercice guidé -->
@@ -376,10 +421,11 @@ canvas { width: 100% !important; height: 100% !important; }
         <!-- Saisie reps -->
         <div id="reps-block">
           <div style="font-size:13px;color:var(--ink-muted);margin-bottom:10px;font-weight:600;">Combien de reps as-tu fait ?</div>
+          <div style="font-size:11px;color:var(--ink-dim);margin-bottom:6px;margin-top:10px;">Autre nombre :</div>
           <div class="series-row" id="guided-quick-btns" style="margin-bottom:12px;"></div>
-          <div class="custom-input-row" style="margin-bottom:16px;">
-            <input class="custom-input" id="guided-custom-input" type="number" min="0" max="999" placeholder="Autre" style="width:90px;">
-            <button class="add-serie-btn" onclick="confirmCustomReps()">OK</button>
+          <div style="font-size:11px;color:var(--ink-muted);margin-bottom:6px;">Nombre différent :</div><div class="custom-input-row" style="margin-bottom:16px;">
+            <input class="custom-input" id="guided-custom-input" type="number" min="0" max="999" placeholder="Autre reps" style="width:110px;">
+            <button class="add-serie-btn" onclick="confirmCustomReps()">+ Ajouter</button>
           </div>
           <button onclick="confirmReps(0)" style="width:100%;background:none;border:1px solid var(--surface3);border-radius:var(--r);color:var(--ink-muted);font-size:13px;font-weight:600;padding:12px;cursor:pointer;">Je n'ai pas fait cet exercice</button>
         </div>
@@ -655,8 +701,111 @@ function initLogScreen() {
 
 function showLogView(view) {
   document.getElementById('log-start').style.display = view === 'start' ? 'block' : 'none';
+  document.getElementById('log-free').style.display = view === 'free' ? 'block' : 'none';
   document.getElementById('log-guided').style.display = view === 'guided' ? 'block' : 'none';
   document.getElementById('log-recap').style.display = view === 'recap' ? 'block' : 'none';
+}
+
+/* ══ MODE LIBRE ══ */
+let freeLog = { pull: [], push: [], dip: [] };
+
+function showFreeSession() {
+  freeLog = { pull: [], push: [], dip: [] };
+  ['pull','push','dip'].forEach(ex => updateFreeSummary(ex));
+  buildFreeQuickButtons();
+  showLogView('free');
+}
+
+function buildFreeQuickButtons() {
+  const pullMax = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 10);
+  const pushMax = profile ? profile.pushMax : 100;
+  const pullVals = [Math.max(1,pullMax-4), Math.max(1,pullMax-2), pullMax, pullMax+2, pullMax+4];
+  const pushVals = pushMax >= 80 ? [10, 20, 30, 40, 50] : [Math.round(pushMax*0.4), Math.round(pushMax*0.6), Math.round(pushMax*0.8), pushMax, Math.round(pushMax*1.2)];
+
+  document.getElementById('free-pull-quick').innerHTML = pullVals.map(v =>
+    `<button class="serie-btn" onclick="freeQuickAdd('pull',${v},this)">${v}</button>`).join('');
+  document.getElementById('free-push-quick').innerHTML = pushVals.map(v =>
+    `<button class="serie-btn" onclick="freeQuickAdd('push',${v},this)">${v}</button>`).join('');
+}
+
+function freeQuickAdd(ex, reps, btn) {
+  freeLog[ex].push(reps);
+  btn.classList.add('flash');
+  setTimeout(() => btn.classList.remove('flash'), 300);
+  updateFreeSummary(ex);
+}
+
+function freeCustomAdd(ex) {
+  const input = document.getElementById('free-' + ex + '-custom');
+  const v = parseInt(input.value);
+  if (!v || v < 1) return;
+  freeLog[ex].push(v);
+  input.value = '';
+  updateFreeSummary(ex);
+  showToast('+ ' + v + ' reps', 'success');
+}
+
+function updateFreeSummary(ex) {
+  const arr = freeLog[ex];
+  const el = document.getElementById('free-' + ex + '-summary');
+  if (!arr.length) { el.textContent = 'Aucune série'; return; }
+  const total = arr.reduce((a,b)=>a+b,0);
+  const max = Math.max(...arr);
+  el.innerHTML = `<span>${arr.length} séries</span> · Total : <span>${total}</span> · Max : <span>${max}</span>`;
+}
+
+function clearFreeLog() {
+  freeLog = { pull: [], push: [], dip: [] };
+  ['pull','push','dip'].forEach(ex => updateFreeSummary(ex));
+  showToast('Formulaire effacé');
+}
+
+async function saveFreeSession() {
+  const pullTotal = freeLog.pull.reduce((a,b)=>a+b,0);
+  const pushTotal = freeLog.push.reduce((a,b)=>a+b,0);
+  if (!pullTotal && !pushTotal) { showToast('Aucune rep enregistrée', 'error'); return; }
+
+  const btn = document.getElementById('free-save-btn');
+  btn.disabled = true; btn.textContent = 'Enregistrement…';
+
+  const today = new Date().toISOString().split('T')[0];
+  const row = {
+    date: today,
+    pullMax: freeLog.pull.length ? Math.max(...freeLog.pull) : 0,
+    pushTotal,
+    dipTotal: freeLog.dip.reduce((a,b)=>a+b,0),
+    pullSeries: JSON.stringify(freeLog.pull),
+    pushSeries: JSON.stringify(freeLog.push)
+  };
+
+  const existing = sessions.findIndex(s=>s.date===today);
+  if (existing>=0) sessions[existing]=row; else sessions.push(row);
+  sessions.sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('mu_sessions', JSON.stringify(sessions));
+
+  if (profile && row.pullMax > profile.pullMax) {
+    profile.pullMax = row.pullMax;
+    localStorage.setItem('mu_profile', JSON.stringify(profile));
+    showToast('🎉 Nouveau record : ' + row.pullMax + ' tractions !', 'success');
+  }
+
+  if (accessToken && cfg.sheetId) {
+    try {
+      await appendToSheet(row);
+      showToast('✓ Séance sauvée + sync Sheets', 'success');
+    } catch(e) {
+      showToast('✓ Sauvé local — sync Sheets échouée', 'error');
+      storePendingSync(row);
+    }
+  } else {
+    showToast('✓ Séance sauvegardée', 'success');
+    if (cfg.sheetId) storePendingSync(row);
+  }
+
+  clearFreeLog();
+  renderDashboard();
+  showLogView('start');
+  btn.disabled = false; btn.textContent = '💾 Enregistrer la séance';
 }
 
 function startGuidedSession() {
