@@ -673,7 +673,7 @@ function initLogScreen() {
 
   const pullMax = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 0);
   const freq = profile ? profile.freq : 3;
-  const phase = pullMax < 5 ? 1 : pullMax < 10 ? 2 : 3;
+  const phase = pullMax < 5 ? 1 : pullMax <= 9 ? 2 : 3;
   const plan = getProgramme(phase, freq, pullMax);
 
   // Jour de la semaine (0=lundi)
@@ -814,7 +814,7 @@ function startGuidedSession() {
     // Jour de repos — proposer quand même une séance
     const pullMax = sessions.length ? Math.max(...sessions.map(s=>s.pullMax||0)) : (profile ? profile.pullMax : 0);
     const freq = profile ? profile.freq : 3;
-    const phase = pullMax < 5 ? 1 : pullMax < 10 ? 2 : 3;
+    const phase = pullMax < 5 ? 1 : pullMax <= 9 ? 2 : 3;
     const allPlans = getProgramme(phase, freq, pullMax);
     const workPlans = allPlans.filter(p => p.exercices);
     if (!workPlans.length) { showToast('Aucune séance disponible', 'error'); return; }
